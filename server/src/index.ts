@@ -11,12 +11,14 @@ wss.on('connection', function connection(ws) {
 
   ws.on('message', function message(buffer) {
     const { type, data } = JSON.parse(buffer.toString());
-
+    console.log(type, data)
     switch (type) {
       case 'reg':
         db.loginUser(data, ws);
         break;
-    
+      case 'create_game':
+        db.createGame(data, ws)
+        break;
       default:
         break;
     }

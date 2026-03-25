@@ -1,9 +1,16 @@
 import { randomUUID } from "node:crypto";
-import { RegData, User } from "../types";
+import { CreateGameData, Question, RegData, User } from "../types";
 import { type WebSocket } from 'ws';
-import { getAnswerString } from "../utils/utils";
+import { getAnswerString, randomPassword } from "../utils/utils";
 
 const users: User[] = [];
+const games: {
+    gameId: string;
+    code: string;
+    questions: Question[];
+    host: WebSocket
+    players: WebSocket[]
+}[] = []
 
 export default {
     loginUser(data: RegData, ws: WebSocket){
@@ -15,7 +22,7 @@ export default {
         }
 
         if(user?.name !== data.name || user.password !== data.password) {
-            ws.send(getAnswerString({
+            ws.send(getAnswerString('reg', {
                 name: '',
                 index: '',
                 error: true,
@@ -25,7 +32,7 @@ export default {
             return;
         }
 
-        ws.send(getAnswerString({
+        ws.send(getAnswerString('reg', {
             name: user.name,
             index: user.index,
             error: false,
@@ -40,5 +47,19 @@ export default {
         });
 
         this.loginUser(data, ws);
+    },
+    createGame(data: CreateGameData, ws: WebSocket){
+        const code = randomPassword(6);
+        const gameId = randomUUID();
+
+        games.push({
+            code,
+            gameId,
+            questions: data.questions,
+            host: ws,
+            players: []
+        })
+
+        ws.send(getAnswerString('game_created', { code, gameId }))
     }
 }
