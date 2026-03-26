@@ -17,7 +17,10 @@ wss.on('connection', function connection(ws) {
         db.loginUser(data, ws);
         break;
       case 'create_game':
-        db.createGame(data, ws)
+        db.createGame(data, ws);
+        break;
+      case 'join_game':
+        db.joinGame(data, ws);
         break;
       default:
         break;
