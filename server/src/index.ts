@@ -1,5 +1,6 @@
 import { WebSocketServer } from 'ws';
-import db from './db/fakeDb';
+import { loginUser } from './api/authUsers';
+import { createGame, joinGame } from './api/gameManagement';
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 
@@ -14,13 +15,13 @@ wss.on('connection', function connection(ws) {
     console.log(type, data)
     switch (type) {
       case 'reg':
-        db.loginUser(data, ws);
+        loginUser(data, ws);
         break;
       case 'create_game':
-        db.createGame(data, ws);
+        createGame(data, ws);
         break;
       case 'join_game':
-        db.joinGame(data, ws);
+        joinGame(data, ws);
         break;
       default:
         break;
