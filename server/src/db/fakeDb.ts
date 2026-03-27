@@ -7,7 +7,8 @@ type DB = {
     addNewUser(userData: User): void;
     getUser(key: 'ws' | 'name' | 'index', value: string | WebSocket): User | null;
     addGame(game: Game): void;
-    getGameByCode(code: string): Game | null;
+    getGame(key: 'code' | 'id', value: string): Game | null;
+    updateGame(id: string, data: Game): void;
 }
 
 export const fakeDb: DB = {
@@ -24,9 +25,14 @@ export const fakeDb: DB = {
     addGame(game){
         this.games.push(game);
     },
-    getGameByCode(code){
-        const game = this.games.find(game => game.code === code);
+    getGame(key, value){
+        const game = this.games.find(game => game[key] === value);
 
         return game ?? null;
+    },
+    updateGame(id, data){
+        const gameIndex = this.games.findIndex(game => game.id === id);
+
+        this.games[gameIndex] = data;
     }
 }
