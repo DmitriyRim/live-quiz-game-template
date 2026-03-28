@@ -40,9 +40,9 @@ export function joinGame(data: JoinGameData, ws: WebSocket){
             index: currentUser.index,
             score: 0,
             ws: ws,
-            // hasAnswered?: boolean;
-            // answerTime?: number;
-            // answeredCorrectly?: boolean;
+            hasAnswered: false,
+            answerTime: 0,
+            answeredCorrectly: false,
         }
 
         players.push(player);

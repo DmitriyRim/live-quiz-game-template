@@ -21,6 +21,8 @@ export function startGame(data: StartGameData, ws: WebSocket){
         fakeDb.updateGame(data.gameId, {...game, currentQuestion: nextQuestion, questionStartTime: Date.now()})
         ws.send(message);
         players.forEach(player => player.ws?.send(message));
+
+        setTimeout(() => questionResult(data.gameId, ws), questions[nextQuestion].timeLimitSec * 1000);
     }
 }
 
@@ -32,15 +34,64 @@ export function answerAccepted(data: AnswerData, ws: WebSocket) {
         const { questionStartTime, questions, players, currentQuestion } = game;
         const currentUserIndex = players.findIndex(player => player.ws === ws);
 
-        if(currentQuestion !== -1 && questions[data.questionIndex + 1].correctIndex === data.answerIndex + 1 && questionStartTime) {
-            const timeRemaining = questionStartTime / time;
+        if (questionStartTime) {
+            const currentPlayer = players[currentUserIndex];
 
-            players[currentUserIndex].score += 1000 * (timeRemaining / questions[currentQuestion].timeLimitSec)
-            fakeDb.updateGame(data.gameId, {...game, players})
+            players[currentUserIndex] = {
+                ...currentPlayer,
+                hasAnswered: true,
+                answerTime: Math.floor((questionStartTime - time) / 1000),
+                answeredCorrectly: questions[data.questionIndex + 1].correctIndex === data.answerIndex,
+            }
         }
 
         ws.send(getAnswerString('answer_accepted', {
             "questionIndex": currentQuestion
         }))
+    }
+}
+
+function questionResult(gameId: string, hostWs: WebSocket){
+    const game = fakeDb.getGame('id', gameId);
+
+    if(game) {
+        const { players, currentQuestion, questions, questionStartTime } = game;
+        const playerResults: { name: string; answered: boolean | undefined; correct: boolean | undefined; pointsEarned: number; totalScore: number; }[] = [];
+        const updatePlayers = players.map(player => {
+            const { name, hasAnswered, answeredCorrectly, answerTime, score } = player;
+
+            if (questionStartTime && answerTime) {
+                const timeRemaining = questionStartTime / answerTime;
+                const pointsEarned = 1000 * (timeRemaining / questions[currentQuestion].timeLimitSec);
+                const totalScore = score + pointsEarned;
+
+                playerResults.push({
+                    name,
+                    answered: hasAnswered,
+                    correct: answeredCorrectly,
+                    pointsEarned,
+                    totalScore
+                })
+
+                return {
+                    ...player,
+                    score: totalScore,
+                    hasAnswered: false,
+                    answerTime: 0,
+                    answeredCorrectly: false,
+                }
+            }
+            return player;
+        })
+        
+        const message = getAnswerString('question_result', {
+            questionIndex: currentQuestion,
+            correctIndex: questions[currentQuestion].correctIndex,
+            playerResults
+        })
+
+        fakeDb.updateGame(gameId, {...game, players: updatePlayers})
+        players.forEach(player => player.ws?.send(message));
+        hostWs.send(message);
     }
 }
