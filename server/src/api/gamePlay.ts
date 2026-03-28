@@ -10,6 +10,10 @@ export function startGame(data: StartGameData, ws: WebSocket){
         const { currentQuestion, questions, players } = game;
         const nextQuestion = currentQuestion + 1;
 
+        if(!questions[nextQuestion]) {
+            return gameFinished(data.gameId, ws);
+        }
+
         const message = getAnswerString('question', {
             questionNumber: nextQuestion,
             totalQuestions: questions.length,
@@ -40,7 +44,7 @@ export function answerAccepted(data: AnswerData, ws: WebSocket) {
             players[currentUserIndex] = {
                 ...currentPlayer,
                 hasAnswered: true,
-                answerTime: Math.floor((questionStartTime - time) / 1000),
+                answerTime: Math.floor((time - questionStartTime) / 1000),
                 answeredCorrectly: questions[data.questionIndex + 1].correctIndex === data.answerIndex,
             }
         }
@@ -91,6 +95,26 @@ function questionResult(gameId: string, hostWs: WebSocket){
         })
 
         fakeDb.updateGame(gameId, {...game, players: updatePlayers})
+        players.forEach(player => player.ws?.send(message));
+        hostWs.send(message);
+        setTimeout(() => startGame({ gameId }, hostWs), 2000);
+    }
+}
+
+function gameFinished(gameId: string, hostWs: WebSocket){
+    const game = fakeDb.getGame('id', gameId);
+
+    if(game) {
+        const { players } = game;
+        const scoreboard = players.sort((a, b) => a.score - b.score).map((player, index) => {
+            return {
+                name: player.name,
+                score: player.score,
+                rank: index + 1
+            }
+        });
+        const message = getAnswerString('game_finished', { scoreboard });
+        
         players.forEach(player => player.ws?.send(message));
         hostWs.send(message);
     }
