@@ -1,7 +1,7 @@
 import { WebSocketServer } from 'ws';
 import { loginUser } from './api/authUsers';
 import { createGame, joinGame } from './api/gameManagement';
-import { startGame } from './api/gamePlay';
+import { answerAccepted, startGame } from './api/gamePlay';
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 
@@ -26,6 +26,9 @@ wss.on('connection', function connection(ws) {
         break;
       case 'start_game':
         startGame(data, ws);
+        break;
+      case 'answer':
+        answerAccepted(data, ws);
         break;
       default:
         break;

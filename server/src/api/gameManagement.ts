@@ -19,7 +19,7 @@ export function createGame(data: CreateGameData, ws: WebSocket){
             players: [],
             currentQuestion: -1,
             status: 'waiting',
-            //   questionStartTime?: number,
+            questionStartTime: 0,
             //   questionTimer?: NodeJS.Timeout;
             playerAnswers: new Map<string, { answerIndex: number; timestamp: number }>
         })
@@ -31,7 +31,7 @@ export function createGame(data: CreateGameData, ws: WebSocket){
 export function joinGame(data: JoinGameData, ws: WebSocket){
     const game = fakeDb.getGame('code', data.code);
     const currentUser = fakeDb.getUser('ws', ws);
-    console.log(game)
+
     if(game && currentUser){
         const { id, players } = game;
         const message = getAnswerString('game_joined', { gameId: id });
