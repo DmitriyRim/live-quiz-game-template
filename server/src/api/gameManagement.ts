@@ -20,7 +20,7 @@ export function createGame(data: CreateGameData, ws: WebSocket){
             currentQuestion: -1,
             status: 'waiting',
             questionStartTime: 0,
-            //   questionTimer?: NodeJS.Timeout;
+        //   questionTimer?: NodeJS.Timeout;
             playerAnswers: new Map<string, { answerIndex: number; timestamp: number }>
         })
 

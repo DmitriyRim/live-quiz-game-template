@@ -65,15 +65,16 @@ function questionResult(gameId: string, hostWs: WebSocket){
             const { name, hasAnswered, answeredCorrectly, answerTime, score } = player;
 
             if (questionStartTime && answerTime) {
-                const timeRemaining = questionStartTime / answerTime;
-                const pointsEarned = 1000 * (timeRemaining / questions[currentQuestion].timeLimitSec);
-                const totalScore = score + pointsEarned;
+                const timeLimit = questions[currentQuestion].timeLimitSec;
+                const timeRemaining = Math.max(timeLimit - answerTime, 0)
+                const pointsEarned = answeredCorrectly ? 1000 * ( timeRemaining / timeLimit) : 0;
+                const totalScore = score + +pointsEarned.toFixed(2);
 
                 playerResults.push({
                     name,
                     answered: hasAnswered,
                     correct: answeredCorrectly,
-                    pointsEarned,
+                    pointsEarned: +pointsEarned.toFixed(2),
                     totalScore
                 })
 
