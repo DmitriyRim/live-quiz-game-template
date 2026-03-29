@@ -46,8 +46,16 @@ export function joinGame(data: JoinGameData, ws: WebSocket){
         }
 
         players.push(player);
-        ws.send(message);
-        playerJoined(game);
+
+        fakeDb.updateGame(game.id, {
+            ...game,
+            players
+        });
+        
+        setTimeout(() => {
+            ws.send(message)
+            playerJoined(game);
+        }, 0)
     }
 };
 

@@ -107,7 +107,7 @@ function gameFinished(gameId: string, hostWs: WebSocket){
 
     if(game) {
         const { players } = game;
-        const scoreboard = players.sort((a, b) => a.score - b.score).map((player, index) => {
+        const scoreboard = players.sort((a, b) => b.score - a.score).map((player, index) => {
             return {
                 name: player.name,
                 score: player.score,
