@@ -9,6 +9,7 @@ type DB = {
     addGame(game: Game): void;
     getGame(key: 'code' | 'id', value: string): Game | null;
     updateGame(id: string, data: Game): void;
+    deletePlayerFromGame(ws: WebSocket): string[];
 }
 
 export const fakeDb: DB = {
@@ -34,5 +35,21 @@ export const fakeDb: DB = {
         const gameIndex = this.games.findIndex(game => game.id === id);
 
         this.games[gameIndex] = data;
+    },
+    deletePlayerFromGame(ws) {
+        const user = fakeDb.getUser('ws', ws);
+        const gameIds: string[] = [];
+
+        if(user) {
+            fakeDb.games.forEach(game => {
+                const playerIndex = game.players.findIndex(p => p.index === user.index);
+
+                if (playerIndex !== -1) {
+                    game.players.splice(playerIndex, 1);
+                    gameIds.push(game.id);
+                }
+            })
+        }
+        return gameIds;
     }
 }

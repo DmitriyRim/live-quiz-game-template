@@ -66,7 +66,7 @@ function playerJoined(game: Game){
     }
 }
 
-function updatePlayers(host: User, players: Player[]){
+export function updatePlayers(host: User, players: Player[]){
     const message = getAnswerString('update_players', players.map(player => ({
         name: player.name,
         index: player.index,

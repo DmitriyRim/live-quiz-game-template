@@ -1,7 +1,8 @@
 import { WebSocketServer } from 'ws';
 import { loginUser } from './api/authUsers';
-import { createGame, joinGame } from './api/gameManagement';
+import { createGame, joinGame, updatePlayers } from './api/gameManagement';
 import { answerAccepted, startGame } from './api/gamePlay';
+import { fakeDb } from './db/fakeDb';
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 
@@ -34,4 +35,20 @@ wss.on('connection', function connection(ws) {
         break;
     }
   });
+
+  ws.on('close', () => {
+    const gameIds = fakeDb.deletePlayerFromGame(ws);
+
+    gameIds.forEach(id => {
+      const game = fakeDb.getGame('id', id);
+
+      if(game) {
+        const host = fakeDb.getUser('index', game.hostId);
+
+        if(!host) return;
+        updatePlayers(host, game.players);
+      }
+    })
+
+  })
 });
