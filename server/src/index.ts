@@ -46,7 +46,7 @@ wss.on('connection', function connection(ws) {
         const host = fakeDb.getUser('index', game.hostId);
 
         if(!host) return;
-        updatePlayers(host, game.players);
+        updatePlayers(game);
       }
     })
 
